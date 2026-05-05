@@ -15,7 +15,6 @@ library(irtpop)
 ?population_difficulty
 ?population_discrimination
 ?item_metrics
-help(package = "irtpop")
 ```
 
 ## Example
