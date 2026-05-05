@@ -1,0 +1,397 @@
+\documentclass[man, 12pt, floatsintext]{apa7}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage{newtxtext,newtxmath} % Times New Roman (text and math)
+\usepackage[style=apa, backend=biber]{biblatex}
+\usepackage{graphicx}
+\usepackage{longtable}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{array}
+
+% Bibliography file
+\addbibresource{references.bib}
+
+\title{Population Difficulty and Discrimination in Item Response Theory: An Alternative to Traditional Item Parameters}
+\shorttitle{Population Difficulty and Discrimination}
+
+% Double-anonymous review: Do not include author names or affiliations
+\author{Joakim Wallmark}
+\affiliation{Department of statistics, USBE, Umeå University}
+
+\abstract{
+Traditional Item Response Theory (IRT) parameters for item difficulty and discrimination often depend heavily on the specific assumptions and constraints of the chosen model. This paper introduces and evaluates alternative metrics—population difficulty and population discrimination—that generalize across dichotomous and polytomous item types and apply to both unidimensional and multidimensional models. These metrics can be used independently or as a complement to traditional parameters. They also readily extend to semiparametric or nonparametric modeling approaches. We compare the population-based metrics to traditional item parameters through a series of simulations and an empirical example. Our findings suggest that population-based metrics are robust metrics for evaluating item characteristics across a variety of different populations or IRT models.
+}
+
+\keywords{item response theory, item difficulty, item discrimination, multidimensional IRT, item analysis, population-based metrics}
+
+\begin{document}
+
+\maketitle
+
+\section{Introduction}
+
+Item response theory (IRT) is an established framework for modeling the relationship between latent traits and observed item responses in educational and psychological measurement. In standard formulations, item properties are summarised by parameters such as difficulty and discrimination, which describe the location and steepness of the item characteristic curve on the latent continuum \parencite{Birnbaum1968,Embretson2000,Lord1980,Baker2004}. These parameters are central in test construction, score interpretation, and adaptive testing workflows.
+
+In the unidimensional two-parameter logistic (2PL) model, the probability of a correct response is governed by the item discrimination and the item difficulty. The difficulty parameter, traditionally denoted as $b$, represents the exact point on the $\theta$ continuum where the probability of a correct response is exactly 0.5, which functions as the inflection point of the logistic curve. The discrimination parameter, denoted as $a$, reflects the slope of the item characteristic curve at that specific $b$ location. While these parameters possess highly desirable statistical properties for maximum likelihood estimation, parameter equating, and computerized adaptive testing workflows, they are fundamentally and exclusively "local" quantities. If an assessment is administered to a population whose mean ability is significantly lower or higher than the item's $b$ parameter, the item will fail to effectively differentiate among respondents in that specific population, regardless of how large the $a$ parameter may be. This is illustrated in Figure \ref{fig:item-example} for a 2PL model item (refer to Equation~\ref{eq:m3pl} in the Method section for model details). For this item, item information is only high for respondents close to the edge of the population distribution. Despite the large discrimination parameter, the item has little value for differentiating respondents in the population as a whole. Of course both parameters together or the information curve itself can be used to understand this, but it would be useful to have a single summary metric that captures this population-level behavior directly, without needing to interpret the parameters or figures in the context of the population distribution.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.5\textwidth]{item-example.pdf}
+    \caption{Item characteristic curve (top), item information function (middle), and population trait distribution (bottom) for a 2PL item with high discrimination ($a = 1.7$) and high difficulty ($b = 2.6$) against a standard normal population. The dashed line marks $b$.}
+    \label{fig:item-example}
+\end{figure}
+
+In models for polytomous items, item difficulty is distributed across multiple "threshold" or "step" parameters rather than represented by a single item parameter, making interpretation more difficult \parencite{Samejima1969,Muraki1992}. Parameter interpretation is even more complex in multidimensional IRT, where discrimination is a vector across latent dimensions and no single item parameter generally summarises item location \parencite{Reckase2009,Ackerman1996Developments}. As a consequence, multidimensional IRT work has emphasized graphical and conditional summaries to aid interpretation, but these summaries still typically evaluate item behavior at selected regions of the latent space rather than averaging over a target population distribution \parencite{Ackerman1996Graphical}. Additionally, visualizations can be complex and time-consuming to evaluate and compare for large tests with many items.
+
+
+Furthermore, traditional IRT parameters are typically reported on logit scales, which are often less intuitive for applied audiences and may require additional transformation or explanation to support interpretation \parencite{LudlowHaley1995,EkstrandEtAl2022}. Because these parameters are also defined within a particular model and its assumptions, their meaning can be harder to compare across IRT models or in settings where a parametric specification fits poorly and more flexible semiparametric or nonparametric alternatives are preferred \parencite{Ramsay1991,SijtsmaMolenaar2002,Feuerstahler2021,BaghaeiEffatpanah2024}.
+
+Classical test theory (CTT) addresses this practical need with explicitly population-dependent indices, such as proportion-correct difficulty and item discrimination based on score-group or correlation methods \parencite{Kelley1939}. Prior work linking CTT-style indices to latent-variable models highlights that these summary measures can be interpreted as functions of population trait distributions rather than as fixed item constants \parencite{Ferrando2012,MaydeuOlivares2011}. This distinction between population-independent and population-dependent discrimination is especially important when comparing item functioning across cohorts that differ in ability distributions.
+
+In this study, we develop population-based item difficulty and discrimination metrics defined directly from IRT expected item scores and their derivatives. First, we formalize model-agnostic indices that generalize across dichotomous and polytomous items in both unidimensional and multidimensional settings, including both dimension-specific and scalar summaries of discrimination. We then demonstrate, through simulation and an empirical example, how these population-based metrics complement traditional parameter reporting when monitoring item behavior within and across groups.
+
+\section{Method}
+For item $j$, let $X_j \in \{0, 1, \ldots, \mathrm{max}_j\}$ denote the item score, where $\mathrm{max}_j$ is the maximum possible score for item $j$. Let $\boldsymbol{\theta}$ denote the latent trait vector, and let $f(\boldsymbol{\theta})$ be its probability density function in the population of interest. We define population difficulty and population discrimination as
+\begin{equation}\label{eq:pop-difficulty}
+B_j = \int \left[1 - \frac{\mathbb{E}(X_j \mid \boldsymbol{\theta})}{\mathrm{max}_j}\right] f(\boldsymbol{\theta}) d\boldsymbol{\theta}
+\end{equation}
+and
+\begin{equation}\label{eq:pop-discrimination}
+\mathbf{A}_j = \int \left[\frac{\nabla_{\boldsymbol{\theta}}\mathbb{E}(X_j \mid \boldsymbol{\theta})}{\mathrm{max}_j}\right] f(\boldsymbol{\theta}) d\boldsymbol{\theta},
+\end{equation}
+respectively, where $\mathbb{E}(X_j \mid \boldsymbol{\theta})$ is the expected item score given latent trait vector $\boldsymbol{\theta}$, and $\nabla_{\boldsymbol{\theta}}\mathbb{E}(X_j \mid \boldsymbol{\theta})$ is its gradient with respect to $\boldsymbol{\theta}$. The population discrimination $\mathbf{A}_j$ is a vector of the same dimension as $\boldsymbol{\theta}$, capturing the item's discrimination along each dimension. Dividing by $\mathrm{max}_j$ maps the expected score onto the unit interval $[0, 1]$, making $B_j$ and $\mathbf{A}_j$ comparable across items regardless of the number of possible item responses and maximum item score. The complement $1 - \mathbb{E}(X_j \mid \boldsymbol{\theta})/\mathrm{max}_j$ expresses the expected proportion of the maximum score that is \emph{not} achieved, so that $B_j$ scales in the same direction as conventional difficulty: higher values indicate harder items. Integrating against $f(\boldsymbol{\theta})$ takes a weighted average over the population, yielding a single summary that reflects both the shape of the item characteristic curve and the distribution of trait levels in the target population.
+
+While $\mathbf{A}_j$ in Equation~\eqref{eq:pop-discrimination} conveys dimension-specific discrimination, a scalar summary of overall discrimination across all dimensions for multidimensional IRT models is practically valuable. We therefore define a scalar measure of multidimensional population discrimination using a covariance-weighted gradient norm:
+\begin{equation}\label{eq:pop-discrimination-scalar}
+A_j = \int \frac{\sqrt{\nabla_{\boldsymbol{\theta}}\mathbb{E}(X_j \mid \boldsymbol{\theta})^{\top}\,\boldsymbol{\Sigma}_\theta\,\nabla_{\boldsymbol{\theta}}\mathbb{E}(X_j \mid \boldsymbol{\theta})}}{\mathrm{max}_j} f(\boldsymbol{\theta}) d\boldsymbol{\theta}.
+\end{equation}
+Here, $\boldsymbol{\Sigma}_\theta=\mathrm{Cov}_{f(\boldsymbol{\theta})}$ is the covariance matrix of the latent trait vector under the population distribution $f(\boldsymbol{\theta})$. For any unit direction vector $\mathbf{u}$ in the latent space, $\mathbf{u}^{\top}\boldsymbol{\Sigma}_\theta\mathbf{u}$ is the population variance along that direction; directions with larger values are more prevalent in the population, and directions with smaller values are less prevalent. The term under the square root is the covariance-weighted quadratic form of the gradient, so $A_j$ is weighted more in directions where the population varies more and less in directions where it varies little. When $\boldsymbol{\Sigma}_\theta=\mathbf{I}$, Equation~\eqref{eq:pop-discrimination-scalar} reduces to the Euclidean-norm form. For unidimensional models, the population discrimination in Equation~\eqref{eq:pop-discrimination} is a scalar and is equivalent to the scalar population discrimination in Equation~\eqref{eq:pop-discrimination-scalar}.
+
+These integrals can be computed using numerical integration methods, such as Gauss–Hermite quadrature or Monte Carlo integration. In practice, $f(\boldsymbol{\theta})$ is often assumed to be multivariate standard normal, but it can be estimated from data or specified based on theoretical considerations. These population-based metrics provide a summary of how difficult and discriminating an item is across the entire population, rather than at a specific trait level.
+
+\subsection{Item Response Models}
+In this section, we introduce the item response models used in this study to demonstrate utility of the population metrics defined in Equations~\eqref{eq:pop-difficulty}--\eqref{eq:pop-discrimination-scalar}: the multidimensional two- and three-parameter logistic models for dichotomous items, and the multidimensional graded response model (GRM) for polytomous items \parencite{Reckase2009}.
+
+For the multidimensional three-parameter logistic (3PL) model, extending the unidimensional logistic formulation of \textcite{Birnbaum1968}, the probability of a correct response ($X_j = 1$) is given by
+\begin{equation}\label{eq:m3pl}
+P(X_j = 1 \mid \boldsymbol{\theta}) = c_j + (1 - c_j) \frac{\exp(\mathbf{a}_j^T \boldsymbol{\theta} + d_j)}{1 + \exp(\mathbf{a}_j^T \boldsymbol{\theta} + d_j)},
+\end{equation}
+where $\mathbf{a}_j$ is the vector of discrimination parameters, $d_j$ is the intercept, and $c_j$ is the lower asymptote (guessing) parameter. The multidimensional two-parameter logistic (2PL) model is obtained as the special case $c_j = 0$. For unidimensional dichotomously scored models where $\theta$ is scalar, the conventional difficulty parameter is typically defined as $b_j = -d_j/a_j$. In the 2PL special case, this is the trait value at which $P(X_j = 1 \mid \theta) = 0.5$.
+
+
+For an item $j$ with ordered item scores $x=0,1,2, \ldots$ the multidimensional GRM defines the probability for responding with a score of $x$ or higher for all $x>0$ as follows:
+$$
+P\left(X_j \geq x \mid \theta\right)=\frac{\exp \left(\mathbf{a}_j^{\top} \theta+d_{j x}\right)}{1+\exp \left(\mathbf{a}_j^{\top} \theta+d_{j x}\right)}
+$$
+where $d_{j x}$ are ordered intercepts under the constraint $d_{j 1}>d_{j 2}>\ldots>d_{j, \max _{j}}$. From this, it follows that the probability of responding with a score of $x$ is:
+\begin{equation}\label{eq:mgrm}
+P\left(X_j=x \mid \theta\right)= \begin{cases}1-P\left(X_j \geq x+1 \mid \theta\right), & \text { if } x=0 \\ P\left(X_j \geq x \mid \theta\right)-P\left(X_j \geq x+1 \mid \theta\right), & \text { otherwise }\end{cases}
+\end{equation}
+
+\section{Standard Errors of the Population Metrics}
+Analytical standard errors for the population metrics can be obtained via the multivariate Delta method. Let $\boldsymbol{\xi}_j$ denote the item parameter vector for item $j$ (e.g., for the multidimensional 2PL, $\boldsymbol{\xi}_j$ contains the discrimination vector $\mathbf{a}_j$ and intercept $d_j$), and let $\mathbf{\Sigma}_{\hat{\boldsymbol{\xi}}}$ be the covariance matrix of $\hat{\boldsymbol{\xi}}_j$. We first consider the case where the parameters of the latent density $f(\boldsymbol{\theta})$ are fixed (e.g., a standard multivariate normal distribution to anchor the scale), so that uncertainty comes only from the item parameters. When the parameters of $f(\boldsymbol{\theta})$ are estimated jointly, $\mathbf{\Sigma}_{\hat{\boldsymbol{\xi}}}$ must be expanded to the full joint covariance matrix and the gradients must include derivatives with respect to those parameters.
+
+For the scalar population difficulty $B_j$ (Equation~\ref{eq:pop-difficulty}):
+$$\text{Var}(\hat{B}_j) \approx \left(\nabla_{\boldsymbol{\xi}_j} B_j\right)^T \mathbf{\Sigma}_{\hat{\boldsymbol{\xi}}} \left(\nabla_{\boldsymbol{\xi}_j} B_j\right), \quad \text{where} \quad \nabla_{\boldsymbol{\xi}_j} B_j = -\frac{1}{\max_j} \int \left[ \nabla_{\boldsymbol{\xi}_j}\mathbb{E}(X_j \mid \boldsymbol{\theta})\right] f(\boldsymbol{\theta})\, d\boldsymbol{\theta}.$$
+
+For the vector population discrimination $\mathbf{A}_j$ (Equation~\ref{eq:pop-discrimination}):
+$$\mathbf{\Sigma}_{\mathbf{A}_j} \approx \mathbf{J}_{\mathbf{A}_j} \mathbf{\Sigma}_{\hat{\boldsymbol{\xi}}} \mathbf{J}_{\mathbf{A}_j}^T, \quad \text{where} \quad \mathbf{J}_{\mathbf{A}_j} = \frac{1}{\max_j} \int \left[ \nabla_{\boldsymbol{\xi}_j}\nabla_{\boldsymbol{\theta}} \mathbb{E}(X_j \mid \boldsymbol{\theta}) \right] f(\boldsymbol{\theta})\, d\boldsymbol{\theta}.$$
+
+For the scalar population discrimination $A_j$ (Equation~\ref{eq:pop-discrimination-scalar}):
+$$
+\begin{aligned}
+\text{Var}(\hat{A}_j) &\approx \left(\nabla_{\boldsymbol{\xi}_j} A_j\right)^T \mathbf{\Sigma}_{\hat{\boldsymbol{\xi}}} \left(\nabla_{\boldsymbol{\xi}_j} A_j\right), \quad \text{where} \\
+\nabla_{\boldsymbol{\xi}_j} A_j &= \frac{1}{\max_j} \int \frac{\left[\nabla_{\boldsymbol{\xi}_j}\nabla_{\boldsymbol{\theta}} \mathbb{E}(X_j \mid \boldsymbol{\theta})\right]^T \boldsymbol{\Sigma}_\theta\, \nabla_{\boldsymbol{\theta}}\mathbb{E}(X_j \mid \boldsymbol{\theta})}{\sqrt{\nabla_{\boldsymbol{\theta}}\mathbb{E}(X_j \mid \boldsymbol{\theta})^{\top}\,\boldsymbol{\Sigma}_\theta\,\nabla_{\boldsymbol{\theta}}\mathbb{E}(X_j \mid \boldsymbol{\theta})}} f(\boldsymbol{\theta})\, d\boldsymbol{\theta}.
+\end{aligned}
+$$
+
+The analytical standard errors are $\text{SE}(\hat{B}_j) = \sqrt{\text{Var}(\hat{B}_j)}$, $\text{SE}(\hat{A}_{jk}) = \sqrt{(\mathbf{\Sigma}_{\mathbf{A}_j})_{kk}}$ for the $k$th element of $\mathbf{A}_j$, and $\text{SE}(\hat{A}_j) = \sqrt{\text{Var}(\hat{A}_j)}$. Step-by-step derivations are given in Appendix~\ref{app:se-derivations}.
+
+\subsection{Estimated Latent Distribution Parameters}
+In many applications—for instance, confirmatory multidimensional IRT models—the latent distribution parameters are estimated jointly with the item parameters. When $f(\boldsymbol{\theta})$ is multivariate normal with mean $\boldsymbol{\mu}$ and covariance $\boldsymbol{\Sigma}_\theta$, some or all elements of $\boldsymbol{\mu}$ and $\boldsymbol{\Sigma}_\theta$ may be free parameters. Let $\boldsymbol{\phi}$ denote the vector of estimated latent distribution parameters (e.g., the free off-diagonal elements of $\boldsymbol{\Sigma}_\theta$ when means and variances are fixed for identification). The full parameter vector for the Delta method is then $\boldsymbol{\psi}_j = (\boldsymbol{\xi}_j^\top, \boldsymbol{\phi}^\top)^\top$, with joint covariance matrix $\mathbf{V}_{\boldsymbol{\psi}_j}$ obtained from the information matrix of the full model.
+
+The Delta method formulas retain the same structure as above, but with the gradient or Jacobian now taken with respect to the full vector $\boldsymbol{\psi}_j$. For $B_j$:
+$$\text{Var}(\hat{B}_j) \approx \left(\nabla_{\boldsymbol{\psi}_j} B_j\right)^T \mathbf{V}_{\boldsymbol{\psi}_j} \left(\nabla_{\boldsymbol{\psi}_j} B_j\right), \quad \text{where}\quad \nabla_{\boldsymbol{\psi}_j} B_j = \begin{pmatrix} \nabla_{\boldsymbol{\xi}_j} B_j \\ \nabla_{\boldsymbol{\phi}} B_j \end{pmatrix}.$$
+
+The item-parameter block $\nabla_{\boldsymbol{\xi}_j} B_j$ is unchanged. The new block involves derivatives of $f(\boldsymbol{\theta})$ with respect to $\boldsymbol{\phi}$:
+$$\nabla_{\boldsymbol{\phi}} B_j = \int \left[1 - \frac{\mathbb{E}(X_j \mid \boldsymbol{\theta})}{\mathrm{max}_j}\right] \nabla_{\boldsymbol{\phi}} f(\boldsymbol{\theta})\, d\boldsymbol{\theta}.$$
+
+For $\mathbf{A}_j$, the covariance matrix is $\mathbf{\Sigma}_{\mathbf{A}_j} \approx \mathbf{J}_{\mathbf{A}_j}^{(\boldsymbol{\psi})}\, \mathbf{V}_{\boldsymbol{\psi}_j}\, (\mathbf{J}_{\mathbf{A}_j}^{(\boldsymbol{\psi})})^T$, and the Jacobian is augmented:
+$$\mathbf{J}_{\mathbf{A}_j}^{(\boldsymbol{\psi})} = \begin{pmatrix} \mathbf{J}_{\mathbf{A}_j} & \nabla_{\boldsymbol{\phi}} \mathbf{A}_j \end{pmatrix}, \quad \text{where}\quad \nabla_{\boldsymbol{\phi}} \mathbf{A}_j = \frac{1}{\mathrm{max}_j}\int \nabla_{\boldsymbol{\theta}}\mathbb{E}(X_j \mid \boldsymbol{\theta})\left[\nabla_{\boldsymbol{\phi}} f(\boldsymbol{\theta})\right]^T d\boldsymbol{\theta}.$$
+
+For the scalar discrimination $A_j$, we have $\text{Var}(\hat{A}_j) \approx (\nabla_{\boldsymbol{\psi}_j} A_j)^T \mathbf{V}_{\boldsymbol{\psi}_j}\, (\nabla_{\boldsymbol{\psi}_j} A_j)$ and the gradient with respect to $\boldsymbol{\phi}$ is more involved because $\boldsymbol{\Sigma}_\theta$ enters both the integrand (through the covariance-weighted norm) and the density $f(\boldsymbol{\theta})$. The full expressions are derived in Appendix~\ref{app:se-derivations}.
+\section{Parameter Effects on Population Metrics}
+All numerical computations and figures in this section are produced using the \texttt{IRTorch} package \parencite{Wallmark2024irtorch} for Python. Figure \ref{fig:parameter-effect-heatmaps} illustrates how population discrimination and population difficulty vary as a function of the IRT item parameters $a$ (discrimination) and $b$ (difficulty) for both the two-parameter logistic model and the three-parameter logistic model with a guessing parameter $c = 0.2$. The latent trait distribution is assumed to be standard normal. Population discrimination is highest for items with high discrimination parameters and moderate difficulty, as these items are most effective at differentiating close to the mean of the latent trait distribution. When the guessing parameter is included, population discrimination is generally lower since the presence of guessing reduces the ability of the item to discriminate between respondents with different levels of the latent trait. This is not reflected in the item discrimination parameter $a$.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\textwidth]{parameter-effect-heatmaps.pdf}
+    \caption{Population discrimination (left) and population difficulty (right) as a function of IRT item parameters $a$ (discrimination) and $b$ (difficulty) for the two-parameter logistic model (top row) and the three-parameter logistic model with guessing parameter $c = 0.2$ (bottom row). The latent trait distribution is standard normal.}
+    \label{fig:parameter-effect-heatmaps}
+\end{figure}
+
+Population difficulty increases with higher difficulty parameters. When $b$ is low, increasing $a$ leads to a decrease in population difficulty, as more people will have a high probability of answering the item correctly. However, when $b$ is high, increasing $a$ leads to an increase in population difficulty. When the difficulty is zero, population difficulty is unaffected by changes in $a$ since the increasing probability of answering above the population mean is balanced by the decreasing probability of answering below the population mean. In the presence of guessing, population difficulty is generally lower, especially for items with high difficulty parameters, since the guessing parameter allows respondents with low levels of the latent trait to have a non-negligible probability of answering correctly. As illustrated, the effects of guessing are incorporated directly into the population metrics.
+
+A key advantage of these population-based metrics is that they extend naturally to multidimensional IRT models. In the multidimensional case, there is no single difficulty parameter $b$; instead, each item loads on multiple latent dimensions through its discrimination weights. The population metrics accommodate this seamlessly into scalar summaries that reflect the overall difficulty and discrimination of the item across the population, without privileging any particular latent dimension.
+
+Figure~\ref{fig:parameter-effect-heatmaps-2d} illustrates this for a two-dimensional two-parameter logistic model with a bivariate standard normal population. The axes represent the two discrimination parameters $a_1$ and $a_2$, one per latent dimension. Because there is no separate difficulty parameter in the multidimensional parameterization, we fix the intercept $d$ to two different values to show its effect. Just like in the unidimensional example, when $d = 0$, the item is of moderate difficulty and population difficulty is $0.5$ regardless of the discrimination weights, reflecting the symmetry of the bivariate standard normal distribution around the origin. When $d = 1$, the item is less difficult and population difficulty increases as the discrimination weights grow, since higher slopes cause the expected score to rise more steeply and benefit a larger fraction of the population. Population discrimination increases with both $a_1$ and $a_2$ and is symmetric in the two parameters. It is only small when both discrimination parameters are small, and it grows as either parameter increases, reflecting the fact that the item can discriminate along either dimension. The intercept $d$ has a relatively small effect on population discrimination, and just like in the unidimensional setting, the population discrimination plots appear close to identical in both settings.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\textwidth]{parameter-effect-heatmaps-2d.pdf}
+    \caption{Population discrimination (left) and population difficulty (right) as a function of the two discrimination parameters $a_1$ and $a_2$ in a two-dimensional two-parameter logistic model. Top row: intercept $d = 0$; bottom row: intercept $d = 1$. The latent trait distribution is bivariate standard normal.}
+    \label{fig:parameter-effect-heatmaps-2d}
+\end{figure}
+
+Figure~\ref{fig:parameter-effect-heatmaps-grm} illustrates the population metrics for a two-point item (scores 0, 1, 2) using a unidimensional GRM. There are two ordered intercept parameters $d_1$ and $d_2$ (with $d_1 > d_2$). Figure~\ref{fig:parameter-effect-heatmaps-grm} shows population discrimination and difficulty as a function of the discrimination parameter $a$ and the intercept midpoint $\bar{d} = (d_1 + d_2)/2$, evaluated at three different fixed distances between the intercepts, $\Delta d = d_1 - d_2 \in \{1, 2, 3\}$. The population distribution is standard normal.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\textwidth]{parameter-effect-heatmaps-grm.pdf}
+    \caption{Population discrimination (left) and population difficulty (right) as a function of the discrimination parameter $a$ and the intercept midpoint $\bar{d} = (d_1 + d_2)/2$ for a unidimensional three-category Graded Response Model. The rows correspond to different fixed distances between the intercepts, $\Delta d = d_1 - d_2 \in \{1, 2, 3\}$. The latent trait distribution is standard normal.}
+    \label{fig:parameter-effect-heatmaps-grm}
+\end{figure}
+
+Population discrimination increases with larger discrimination parameter $a$ and is the largest when the intercept midpoint $\bar{d}$ is close to zero, meaning the intercepts are centered around the population mean. Population difficulty decreases as the intercept midpoint $\bar{d}$ increases, which corresponds to lowering the trait levels required for higher item scores. $\Delta d$ has a very small effect on both population metrics. As the distance $\Delta d$ between intercepts increases, the population discrimination decreases slightly, because the individual intercepts move further into the tails of the trait distribution where fewer respondents can be differentiated. Changing $\Delta d$ has almost no effect on population difficulty.
+
+\section{Simulation Study}
+% \subsection{multidim. irt alternatives}
+% Parameter Recovery (The Baseline)
+
+% If you strictly want to prove that the mathematical integrals for your population difficulty and discrimination metrics  are unbiased under ideal conditions, you fit the exact confirmatory model used to generate the data. This isolates the statistical efficiency of the estimator, giving you a baseline standard error and RMSE  without the confounding noise of rotational indeterminacy.
+% Robustness (The "Real-World" Test)
+
+% Fitting an exploratory model (with subsequent rotation) to confirmatory data tests how sensitive your metrics are to the model specification process itself.
+
+% Doing this actually highlights a massive theoretical advantage of the proposed methods in your manuscript.
+
+% Traditional Parameters: In multidimensional IRT, traditional discrimination parameters are highly volatile and depend entirely on the chosen rotation method (e.g., oblimin vs. promax).
+
+% Population Metrics: Your metrics are based on the expected item score, and its gradient. The overall probability surface of an item is generally invariant to rotation. Therefore, your scalar metric for multidimensional population discrimination, which uses the Euclidean norm of the gradient, should theoretically remain highly stable regardless of how the underlying factor space is rotated.
+
+We conduct a simulation study to evaluate the finite-sample performance of the population-based metrics and to assess the accuracy of their analytical standard errors obtained via the Delta method. We vary three design factors: the number of items ($J \in \{20, 40, 80\}$), the number of latent dimensions ($D \in \{1, 2\}$), and the sample size ($N \in \{1{,}000, 2{,}000, 5{,}000\}$). Each condition is replicated 1,000 times. True discrimination parameters are drawn from a $\mathrm{LogNormal}(0,\, 0.5)$ distribution and true intercepts from $\mathrm{Normal}(0,\, 1)$. The latent trait distribution is multivariate standard normal, $\boldsymbol{\theta} \sim \mathcal{N}(\mathbf{0},\, \mathbf{I}_D)$, so $\boldsymbol{\Sigma}_\theta = \mathbf{I}_D$ in all conditions.
+
+For the unidimensional condition ($D = 1$), a standard 2PL model is fitted. For the two-dimensional condition ($D = 2$), two loading structures are examined. In multidimensional IRT, the factor space is rotationally indeterminate unless constraints are imposed to anchor the solution. The \emph{Echelon} structure achieves this by fixing a single item's cross-loading to zero: item~1 is constrained to load only on $F_1$ (i.e., $a_{1,2} = 0$) while all remaining items load freely on both $F_1$ and $F_2$. This minimal triangular constraint is sufficient for rotational identification and avoids the distortion of simple-structure assumptions \parencite{Reckase2009}. It is included as the baseline identified condition: the fitted model matches the generating structure, so any estimation error in this condition reflects sampling variability rather than model misspecification. The \emph{All Loadings} structure allows all items to load freely on both factors and the model is fitted as an exploratory two-dimensional IRT model, inducing rotational indeterminacy in the individual discrimination parameters. This condition is included to assess whether the population metrics (except for vector population discrimination) remain well-behaved even when the underlying parameterization is unidentified up to rotation, since the expected item score surface—on which the population metrics are based—is invariant to rotation of the factor space.
+
+For each replication, we compute the traditional item parameters ($\hat{\mathbf{a}}_j$, $\hat{d}_j$), population difficulty $\hat{B}_j$ (Equation~\ref{eq:pop-difficulty}), and scalar population discrimination $\hat{A}_j$ (Equation~\ref{eq:pop-discrimination-scalar}). For the two-dimensional condition, we additionally compute both components of the vector population discrimination $\hat{\mathbf{A}}_j$ (Equation~\ref{eq:pop-discrimination}). Analytical standard errors for the population metrics are obtained from the Delta method formulas in Appendix~\ref{app:m2pl-derivations}.
+
+We summarise estimation performance using relative bias ($\mathrm{bias}/|\mathrm{true}|$) and relative RMSE ($\mathrm{RMSE}/|\mathrm{true}|$), which normalize for the different scales on which the traditional parameters and the population metrics operate. For the intercept parameter $d$, whose true values are drawn from $\mathrm{Normal}(0,\, 1)$, the magnitude of $d$ is not meaningful in the same way as the other parameters. Furthermore, true $d$ values often end up being close to zero, and dividing by $|\mathrm{true}|$ would produce unstable ratios for such items. We therefore report absolute bias and RMSE for $d$ rather than relative quantities. The accuracy of the Delta method approximation is assessed by comparing the mean analytical standard error across replications with $\mathrm{SE}_{\mathrm{sim}}$, and by computing empirical 95\% confidence interval coverage rates. Models are estimated using the \texttt{mirt} R package \parencite{Chalmers2012}. The R code for the simulation study and an R package to calculate the population-based metrics will be made available upon publication.
+
+\subsection{Simulation Results}
+
+Figure~\ref{fig:sim-bias} shows relative bias for all estimated parameters across conditions. The boxplots for the traditional discrimination parameters $a_1$ and $a_2$ and the vector discrimination components $A_{j,1}$ and $A_{j,2}$ are clipped in the figure in the all loadings condition because the estimates are highly variable across replications. This reflects the rotational indeterminacy inherent to exploratory multidimensional models: There exist no unique parameter solutions in this setting. By contrast, the population scalar $A_j$ remains stable because the probability surface of an item is invariant to rotation. Thus $A_j$ is well estimated even when the underlying parameterization is not uniquely identified, demonstrating a key advantage of the metric. The population metrics outperform the traditional counterparts in terms of bias in most cases, though all parameters show bias close to zero across conditions, with bias decreasing as $N$ increases. 
+
+% The population-based metrics $B_j$ (ranging approximately 0.3--0.8) and $A_j$ (approximately 0.1--0.3) operate on a smaller absolute scale than the traditional discrimination parameters $a_k$ (approximately 0.5--1.6) and the intercept $d$ (approximately $\pm 2$); without scaling bias by the magnitude of the true parameter value, the naturally smaller absolute errors of the population metrics would overstate their relative accuracy. 
+
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\textwidth]{sim-relative-bias.pdf}
+    \caption{Relative bias for all estimated parameters across simulation conditions. Each boxplot observation is one item's mean bias across replications, divided by the magnitude of its true parameter value (for $d$, absolute bias is shown). Each panel facets by latent dimensionality and loading structure (columns) and parameter type (rows). Box colors correspond to sample size ($N$). The $y$-axis range is set to display $d$, $B_j$, and $A_j$ clearly; the discrimination parameters $a_1$, $a_2$, $A_{j,1}$, and $A_{j,2}$ extend outside this range in several conditions and are clipped.}
+    \label{fig:sim-bias}
+\end{figure}
+
+Figure~\ref{fig:sim-rmse} shows relative RMSE. As expected, RMSE decreases with increasing $N$. Overall, the population metrics show similar RMSE to their traditional counterparts. For the same reasons discussed above, the population scalar $A_j$ remains stable in terms of RMSE across all settings because it summarises overall discrimination regardless of the rotational solution.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\textwidth]{sim-relative-rmse.pdf}
+    \caption{Relative RMSE for all estimated parameters across simulation conditions. Layout is the same as Figure~\ref{fig:sim-bias}; absolute RMSE is shown for $d$. The $y$-axis is set to display $d$, $B_j$, and $A_j$ clearly; $a_1$, $a_2$, $A_{j,1}$, and $A_{j,2}$ extend outside the axis range in several conditions and are clipped.}
+    \label{fig:sim-rmse}
+\end{figure}
+
+Figure~\ref{fig:sim-se} shows the ratio of mean analytical standard error to simulation standard deviation ($\bar{SE}_{\text{analytical}} / SE_{\text{sim}}$). A ratio of 1 indicates that the Delta method standard errors accurately reflect sampling variability. In general, the analytical SEs slightly overestimate the SEs in almost all settings, but increasing $N$ reduces this overestimation and the SE ratio approaches 1. The results are similar for both traditional and population parameters, indicating that the Delta method provides a reasonable approximation for the standard errors of the population metrics. A modest upward trend with increasing $J$ is shown, suggesting larger over-estimation of uncertainty in longer tests.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\textwidth]{sim-se-calibration.pdf}
+    \caption{SE calibration ($\bar{SE}_{\text{analytical}} / SE_{\text{sim}}$) for all estimated parameters across simulation conditions. Values near 1 indicate well-calibrated Delta method standard errors. Layout is the same as Figure~\ref{fig:sim-bias}.}
+    \label{fig:sim-se}
+\end{figure}
+
+Figure~\ref{fig:sim-coverage} shows empirical 95\% confidence interval coverage, defined as the proportion of replications in which the true parameter value falls within the normal-based interval constructed from the analytical standard error, $[\hat{\xi} - 1.96 \cdot SE, \hat{\xi} + 1.96 \cdot SE]$. Coverage rates for all parameters are close to the nominal 95\% level across conditions. The population metrics $B_j$ and $A_j$ achieve near-nominal coverage throughout, further suggesting that the Delta method standard errors translate into well-calibrated confidence intervals. For further details, Table~\ref{tab:sim-results} in the Appendix summarises mean relative bias, mean relative RMSE, and mean SE ratio averaged across items within each condition.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\textwidth]{sim-coverage.pdf}
+    \caption{Empirical 95\% confidence interval coverage for all estimated parameters across simulation conditions. Each point represents the proportion of replications in which the true value fell within the normal-based 95\% interval. The dashed line marks the nominal 95\% level. Layout is the same as Figure~\ref{fig:sim-bias}.}
+    \label{fig:sim-coverage}
+\end{figure}
+
+\newpage
+\section{Empirical Example}
+
+We illustrate the population-based metrics using data from a Swedish national mathematics examination from 2019. The exam is administered to Swedish high school pupils enrolled in Mathematics 3c, a compulsory module for those in technology and natural science tracks. The assessment significantly influences a student's final grade, and it features a variety of question formats, ranging from brief replies to complex problems that demand detailed, sequential explanations. The test contains 28 items, 9 being dichotomously scored (either correct or incorrect) and 19 having possible item scores from 0 to between 2 and 4 depending on the item. The total test score was 58 and there were 1,401 examinees in the dataset. The mean score was 25.54 with a standard deviation of 12.62. The data are fitted using a unidimensional Generalized Partial Credit Model (GPCM) \parencite{Muraki1992} with the R package \texttt{mirt} \parencite{Chalmers2012}, assuming a standard normal latent trait distribution.
+
+\subsection{Population Metrics and Traditional GPCM Parameters}
+
+Figure~\ref{fig:natmath-scatter} displays the relationship between the population-based metrics and their closest traditional counterparts. Panel~(a) shows that population difficulty $B_j$ is strongly associated with the mean threshold parameter $\bar{b}_j = \frac{1}{K-1}\sum_{k=1}^{K-1} b_{jk}$, confirming that $B_j$ captures the same underlying dimension as the IRT difficulty parameters but condenses the full set of $K-1$ thresholds into a single interpretable quantity on the $[0,1]$ scale. Panel~(b) reveals a notably weaker association between population discrimination $A_j$ and the traditional discrimination parameter $a_j$. This reflects the fact that $A_j$ captures not only how steeply the item characteristic curve rises but also how well the curve's steepest region overlaps with the population distribution. Items with large $a_j$ but thresholds placed far from the population mean contribute little to population-level differentiation and consequently receive low $A_j$ values, a feature that the traditional parameter alone does not convey.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\linewidth]{natmath-scatter.pdf}
+    \caption{Population difficulty $B_j$ versus mean threshold $\bar{b}_j$ (panel~a) and population discrimination $A_j$ versus discrimination parameter $a_j$ (panel~b) for the Swedish national mathematics examination. The dashed line is the ordinary least-squares regression line. Each point represents one item; the latent distribution is $\mathcal{N}(0, 1)$.}
+    \label{fig:natmath-scatter}
+\end{figure}
+
+\subsection{Sensitivity to the Assumed Latent Distribution}
+
+A central motivation for population-based metrics is that they make the dependence on the population distribution explicit and controllable. To illustrate this, Figure~\ref{fig:natmath-sensitivity} shows $B_j$ and $A_j$ recomputed under three latent distributions: the standard population $\mathcal{N}(0, 1)$, a higher-ability cohort $\mathcal{N}(+1, 1)$, and a lower-ability cohort $\mathcal{N}(-1, 1)$.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\linewidth]{natmath-sensitivity.pdf}
+    \caption{Population difficulty $B_j$ (panel~a) and population discrimination $A_j$ (panel~b) for all items in the Swedish national mathematics examination, evaluated under three latent trait distributions: $\mathcal{N}(0,1)$ (black, solid), $\mathcal{N}(-1,1)$ (red, dashed), and $\mathcal{N}(+1,1)$ (blue, dot-dashed). Items are ordered by $B_j$ under $\mathcal{N}(0,1)$.}
+    \label{fig:natmath-sensitivity}
+\end{figure}
+
+Panel~(a) shows that the assumed population has a substantial effect on population difficulty. As expected, the lower-ability cohort $\mathcal{N}(-1,1)$ tends to find each item harder and the higher-ability cohort $\mathcal{N}(+1,1)$ tends to find each item easier. However, note that ordering of difficulty between items is not maintained across populations. For example, the sixth least difficult item for the standard population becomes the fourth least difficult for the lower-ability population. For the easiest items (left), all three curves converge toward zero, as all populations find these items nearly trivial. The differences are largest for the hardest items, where the lower-ability cohort's $B_j$ approaches the ceiling while the higher-ability cohort's remains considerably lower. Panel~(b) demonstrates a more complex and practically informative pattern for discrimination. For items with low mean thresholds (easy items, on the left), the lower-ability population obtains higher discrimination values, since those items' characteristic curves are centered near the lower-ability cohort's mean. Conversely, for items with high mean thresholds (hard items, on the right), the higher-ability population benefits from the steepest part of the curve and thus has higher $A_j$. This cross-over pattern, where the relative discriminating power of items reverses depending on which population is examined, is invisible in the traditional parameter $a_j$, which does not change with the population. The population metrics thus give test designers a direct tool for evaluating how an item's contribution to measurement precision shifts when the test is deployed in a different context.
+
+\section{Discussion}
+
+This paper introduced population difficulty ($B_j$) and population discrimination ($A_j$, $\mathbf{A}_j$) as model-agnostic, population-integrated item metrics that complement traditional IRT parameters. These indices are defined as integrals of the expected item score---and its gradient---with respect to a target population distribution, thereby quantifying how items function across the full ability distribution in a specified group rather than at particular points on the latent continuum. We derived analytical standard errors via the Delta method, validated their performance through a simulation study under unidimensional and multidimensional 2PL models, and illustrated the metrics' behavior in an empirical example using a Swedish national mathematics examination.
+
+The simulation results showed that $B_j$, $\mathbf{A}_j$ and $A_j$ are recovered with low relative bias across all conditions, with finite-sample bias decreasing as the sample size increases. Relative RMSE for the population metrics is comparable to that of the traditional item parameters, indicating that the additional integration step does not introduce substantial estimation inefficiency. Delta method standard errors proved slightly conservative---mean analytical SEs modestly exceeded simulation SEs---but this overestimation decreased with larger sample size, and confidence interval coverage remained close to the nominal 95\% level throughout. The slight overestimation of uncertainty errs in a safe direction for practical inference.
+
+The scalar population discrimination $A_j$ provides a key theoretical advantage in multidimensional settings. In exploratory multidimensional IRT, individual item discrimination parameters $\mathbf{a}_j$ are unidentified up to rotation: any orthogonal transformation of the factor space produces an equally valid solution with different element values. As the \emph{All Loadings} simulation condition illustrated, this rotational indeterminacy renders $a_1$ and $a_2$ estimates highly variable across replications. By contrast, $A_j$ was stable in this condition because the expected item score surface---the quantity on which $A_j$ is based---is invariant under rotation of the latent factor space. Scalar $A_j$ therefore provides a uniquely determined discrimination summary even when the underlying parameterization is not identified up to rotation, a situation that arises routinely in practice with exploratory multidimensional models.
+
+Prior multidimensional IRT work has addressed the challenge of characterizing item functioning across multiple dimensions, but existing approaches typically require item-by-item graphical inspection. Composite indices such as MDISC and graphical representations of item discrimination have been previously introduced \parencite{Reckase2009}, and \textcite{Ackerman1996Graphical} proposed vector plots of item discrimination onto a reference composite. These tools are informative but become burdensome as the number of items or dimensions increases. Scalar $A_j$ provides a directly comparable, rotation-invariant numerical summary that collapses multidimensional discrimination into a single value per item. The vector $\mathbf{A}_j$ remains rotation-dependent and is only interpretable in confirmatory or otherwise identified models where the factor axes carry substantive meaning; practitioners should choose between the scalar and vector form depending on whether their model is identified with respect to rotation.
+
+The proposed metrics require only $\mathbb{E}(X_j \mid \boldsymbol{\theta})$ and its gradient, quantities that are available for virtually any IRT model. In nonparametric and semiparametric IRT---where the item characteristic curve is estimated directly from data via, for example, kernel smoothing \parencite{Ramsay1991} or flexible parametric families \parencite{Feuerstahler2021}---traditional parameters such as $a_j$ and $b_j$ are not defined, yet expected scores and numerical gradients can be computed \parencite{SijtsmaMolenaar2002, BaghaeiEffatpanah2024}. Population metrics therefore extend naturally to these flexible approaches, preserving interpretability when a strictly parametric IRT specification fits poorly. An equally important feature for applied practice is that both $B_j$ and $A_j$ are expressed on the same normalized score scale, with $B_j \in [0, 1]$ and $A_j \geq 0$, across all item formats. In mixed-format tests, traditional difficulty parameters are not directly comparable: a 2PL intercept $d_j$ is on a logit scale while GRM threshold parameters index category boundaries. Dividing by the maximum item score places both metrics on the same gradient scale, enabling direct comparisons without ad hoc rescaling.
+
+The proposed metrics connect transparently to both CTT and to earlier population-dependent indices in the latent-variable literature. Under a perfectly fitting IRT model, $B_j = 1 - p_j$, where $p_j$ is the classical proportion-correct difficulty index for the target population. Population difficulty thus subsumes the CTT p-value as a special case and generalizes it to polytomous items and to populations specified via a continuous distribution. The long history of proportion-correct difficulty in CTT \parencite{Kelley1939} suggests that practitioners will find $B_j$ immediately interpretable, since it measures precisely what applied test users mean when they ask how hard an item is for their examinees.
+
+Population discrimination $A_j$ has a corresponding connection to earlier work on population-dependent discrimination in the linear factor-analytic tradition. \textcite{Ferrando2012} organized discrimination indices for the congeneric model into population-independent fineness measures and population-dependent sensitivity coefficients; the latter weight the item's signal-to-noise ratio by the trait variance in the population. Population discrimination $A_j$ generalizes this idea to nonlinear IRT models and polytomous items by replacing the linear slope with the population-averaged gradient norm of the expected item score. \textcite{MaydeuOlivares2011} showed that CTT discrimination indices can be expressed as functions of latent-variable model parameters within a structural equation modeling framework; $A_j$ extends this perspective to the IRT setting where the item--latent relationship is nonlinear. \textcite{Mize2024} implemented population-integrated marginal effects from IRT models as practical item summaries, providing another demonstration of the value of population-dependent indices derived from IRT response functions.
+
+The explicit dependence of $B_j$ and $A_j$ on the specified population distribution is sometimes seen as a limitation relative to traditional IRT parameters, which are designed to be population-invariant given correct model specification. We argue instead that this dependence is a transparent and controllable feature. Traditional IRT parameters are population-independent, but practitioners must still mentally overlay item parameters with the ability distribution to understand practical item functioning; the population distribution enters the interpretation implicitly rather than explicitly. Making it a named input forces a deliberate choice of reference group and enables systematic comparison of item functioning across groups. The empirical sensitivity analysis in Figure~\ref{fig:natmath-sensitivity} illustrated this concretely: not only do the magnitudes of $B_j$ and $A_j$ change across the three ability distributions, but item rank orderings differ, and a cross-over pattern in discrimination values reveals items whose most discriminating zones fall at very different trait levels for different groups. None of these differences would be apparent from inspecting the traditional parameters $a_j$ and $\bar{b}_j$ alone. This explicit population-dependence is also present in CTT p-values and item-total correlations, but the mechanism there is opaque because the ability distribution is not a named input to those indices.
+
+For test design and item bank management, $B_j$ and $A_j$ provide practitioners with a direct route from IRT model estimates to population-specific item summaries. A test developer who has fitted an IRT model to a calibration sample can compute $B_j$ and $A_j$ for any target population by substituting the appropriate $f(\boldsymbol{\theta})$---without refitting the model---and rank items based on their expected behavior for that population. Items with very high $B_j$ or very low $A_j$ can be identified for revision or replacement before deployment. When the target population changes---because a test is extended to a different grade level or country---the same calibrated item parameters can be re-evaluated under the new distribution, enabling proactive quality control. The interpretability challenges associated with logit-scale IRT parameters \parencite{LudlowHaley1995, EkstrandEtAl2022} are partly mitigated by these metrics: $B_j \in [0, 1]$ provides an immediately intuitive difficulty scale, and $A_j$, though not bounded above by 1, is expressed on the same normalized score scale as $B_j$ and avoids the raw logit units of traditional discrimination parameters, making it easier to communicate item characteristics to content experts and stakeholders without measurement training.
+
+Population metrics also suggest a natural extension to differential item functioning (DIF) analysis. Standard DIF approaches compare item parameter estimates across groups \parencite{HollandWainer1993}, but interpreting parameter differences when groups differ substantially in their ability distributions requires care. Computing $B_j$ and $A_j$ separately for each group---using the respective group's ability distribution as $f(\boldsymbol{\theta})$---yields metrics that directly capture population-level functioning for each group. Differences in group-specific population metrics then reflect whether an item is genuinely harder or less discriminating for one group at the population level, integrating over each group's actual ability range. Formalizing this into a DIF statistic with appropriate standard errors is a natural extension of this methodology.
+
+Several limitations warrant attention. The simulation study was restricted to the 2PL model in one and two dimensions. The performance of the Delta method standard errors under three-parameter models and polytomous models such as the GRM or GPCM has not been empirically evaluated, and it remains an open question whether the modest conservatism observed for the 2PL generalizes to those settings. The empirical illustration drew on a single national examination dataset; the degree to which observed patterns---particularly the weak association between $A_j$ and $a_j$ for items with misaligned threshold locations---generalize to other testing contexts, such as attitude surveys or cognitive ability batteries, is unknown. Additionally, the population-dependence of the metrics requires that the practitioner specify a plausible $f(\boldsymbol{\theta})$. If the assumed distribution substantially misrepresents the actual population---for example, if a standard normal is assumed when the true distribution is strongly skewed or bimodal---computed metrics will reflect the assumed rather than the actual population. Sensitivity analysis of the kind illustrated in Figure~\ref{fig:natmath-sensitivity}, combined with empirical estimates of the ability distribution, can mitigate but not eliminate this concern.
+
+The most immediate extension is a formal DIF framework using group-specific population metrics as test statistics. Deriving the joint sampling distribution of $(\hat{B}_j^{(1)}, \hat{B}_j^{(2)})$ and $(\hat{A}_j^{(1)}, \hat{A}_j^{(2)})$ under item parameter invariance, and constructing tests for significant group differences, would yield DIF indices with a direct population-level interpretation. Population difficulty and discrimination also suggest novel criteria for computerized adaptive testing and automated test assembly. In adaptive testing, items are conventionally selected to maximize Fisher information at the current ability estimate \parencite{Linden2000}; selecting items with high $A_j$ for the examinee's posterior distribution would instead prioritize discrimination across the plausible ability range rather than at a single point. In automated test assembly \parencite{VanderLinden2005}, $B_j$ and $A_j$ could serve as content constraints directly targeting the population-level difficulty and discrimination of the assembled form, rather than bounding raw IRT parameter values whose population implications are indirect. Extending the empirical work to nonparametric and semiparametric IRT models---where $\mathbb{E}(X_j \mid \boldsymbol{\theta})$ is estimated from data---would further test the robustness of the framework. Software development, including dedicated R and Python implementations integrated with major IRT packages, would facilitate adoption in applied settings.
+
+\subsection{Conclusion}
+
+Population difficulty and population discrimination offer a principled and flexible complement to traditional IRT item parameters. By integrating expected item scores and their gradients over a specified ability distribution, these metrics translate model-based item properties into interpretable, population-level summaries on a common normalized score scale, with $B_j \in [0, 1]$ and $A_j \geq 0$. The scalar population discrimination $A_j$ is particularly valuable in multidimensional applications, where it provides a rotation-invariant, uniquely determined measure of overall discriminating power that traditional parameter vectors cannot supply. Delta method standard errors support inference, and the framework generalizes without modification to nonparametric IRT and mixed-format tests. As psychometric practice expands to encompass more diverse populations, more complex multidimensional structures, and more flexible response models, population-grounded metrics offer a direct bridge between item characteristics and the populations for whom tests are ultimately designed.
+
+
+\printbibliography
+
+\section*{Acknowledgements}
+Generative AI was used to assist with drafting and editing portions of the manuscript text. All content was reviewed, verified, and approved by the author, who takes full responsibility for the accuracy and integrity of the work.
+
+\appendix
+\section{Derivations of Standard Error Formulas}\label{app:se-derivations}
+
+This appendix provides the derivations needed to compute standard errors for the population-based metrics via the Delta method. We focus on the scalar population discrimination $A_j$, which requires chain-rule differentiation through the square root of a covariance-weighted quadratic form. The derivations for $B_j$ and $\mathbf{A}_j$ follow directly from Leibniz's integral rule applied to Equations~\eqref{eq:pop-difficulty} and~\eqref{eq:pop-discrimination}.
+
+\subsection{Gradient of Scalar Population Discrimination $A_j$}
+
+Starting from Equation~\eqref{eq:pop-discrimination-scalar} with shorthand $\mathbf{g}_j(\boldsymbol{\theta}) = \nabla_{\boldsymbol{\theta}}\mathbb{E}(X_j \mid \boldsymbol{\theta})$ and $h_j(\boldsymbol{\theta}) = \mathbf{g}_j(\boldsymbol{\theta})^\top \boldsymbol{\Sigma}_\theta\, \mathbf{g}_j(\boldsymbol{\theta})$:
+$$A_j = \frac{1}{\mathrm{max}_j}\int \sqrt{h_j(\boldsymbol{\theta})}\, f(\boldsymbol{\theta})\, d\boldsymbol{\theta}.$$
+
+Applying Leibniz's rule and the chain rule for $\sqrt{h_j}$:
+$$\nabla_{\boldsymbol{\xi}_j} \sqrt{h_j} = \frac{\nabla_{\boldsymbol{\xi}_j} h_j}{2\sqrt{h_j}} = \frac{\left[\nabla_{\boldsymbol{\xi}_j} \mathbf{g}_j\right]^T \boldsymbol{\Sigma}_\theta\, \mathbf{g}_j}{\sqrt{h_j}},$$
+where we used $\nabla_{\boldsymbol{\xi}_j} h_j = 2[\nabla_{\boldsymbol{\xi}_j} \mathbf{g}_j]^T \boldsymbol{\Sigma}_\theta\, \mathbf{g}_j$ for the symmetric quadratic form. The gradient is:
+\begin{equation}\label{eq:grad-A-general}
+\nabla_{\boldsymbol{\xi}_j} A_j = \frac{1}{\mathrm{max}_j}\int \frac{\left[\nabla_{\boldsymbol{\xi}_j}\nabla_{\boldsymbol{\theta}} \mathbb{E}(X_j \mid \boldsymbol{\theta})\right]^T \boldsymbol{\Sigma}_\theta\, \nabla_{\boldsymbol{\theta}}\mathbb{E}(X_j \mid \boldsymbol{\theta})}{\sqrt{h_j(\boldsymbol{\theta})}}\, f(\boldsymbol{\theta})\, d\boldsymbol{\theta}.
+\end{equation}
+
+\subsection{Extension to Estimated Latent Distribution}
+
+When $\boldsymbol{\phi}$ (elements of $\boldsymbol{\mu}$ or $\boldsymbol{\Sigma}_\theta$) is estimated jointly with item parameters, we differentiate through both $f(\boldsymbol{\theta})$ and $\boldsymbol{\Sigma}_\theta$. For a free covariance element $\sigma_{rs}$, let $\mathbf{E}_{rs}$ denote the symmetric indicator matrix with ones at positions $(r,s)$ and $(s,r)$.
+
+For $B_j$ and $\mathbf{A}_j$, only the density contributes:
+$$\nabla_{\boldsymbol{\phi}} B_j = \int \left[1 - \frac{\mathbb{E}(X_j \mid \boldsymbol{\theta})}{\mathrm{max}_j}\right] \nabla_{\boldsymbol{\phi}} f(\boldsymbol{\theta})\, d\boldsymbol{\theta}, \qquad
+\nabla_{\boldsymbol{\phi}} \mathbf{A}_j = \frac{1}{\mathrm{max}_j} \int \nabla_{\boldsymbol{\theta}}\mathbb{E}(X_j \mid \boldsymbol{\theta})\, [\nabla_{\boldsymbol{\phi}} f(\boldsymbol{\theta})]^T d\boldsymbol{\theta}.$$
+
+For $A_j$, both $f(\boldsymbol{\theta})$ and $\boldsymbol{\Sigma}_\theta$ in the quadratic form contribute. Applying the product rule:
+$$\nabla_{\boldsymbol{\phi}} A_j = \frac{1}{\mathrm{max}_j}\int \left[\frac{\nabla_{\boldsymbol{\phi}} h_j}{2\sqrt{h_j}}\, f(\boldsymbol{\theta}) + \sqrt{h_j}\, \nabla_{\boldsymbol{\phi}} f(\boldsymbol{\theta})\right] d\boldsymbol{\theta}.$$
+
+Since $\nabla_{\boldsymbol{\phi}} h_j = \mathbf{g}_j^\top (\nabla_{\boldsymbol{\phi}} \boldsymbol{\Sigma}_\theta) \mathbf{g}_j$ and $\partial h_j/\partial \sigma_{rs} = (2-\delta_{rs})g_{jr}g_{js}$ where $g_{jr} = \partial \mathbb{E}(X_j \mid \boldsymbol{\theta})/\partial \theta_r$ and $\delta_{rs}$ is the Kronecker delta:
+\begin{equation}\label{eq:grad-A-sigma}
+\frac{\partial A_j}{\partial \sigma_{rs}} = \frac{1}{\mathrm{max}_j}\int \left[\frac{(2-\delta_{rs})g_{jr}\, g_{js}}{2\sqrt{h_j}}\, f(\boldsymbol{\theta}) + \sqrt{h_j}\, \frac{\partial f(\boldsymbol{\theta})}{\partial \sigma_{rs}}\right] d\boldsymbol{\theta}.
+\end{equation}
+
+For the multivariate normal density, the log-derivative is:
+$$\frac{\partial \log f(\boldsymbol{\theta})}{\partial \sigma_{rs}} = -\frac{1}{2}\left[\text{tr}(\boldsymbol{\Sigma}_\theta^{-1}\mathbf{E}_{rs}) - (\boldsymbol{\theta}-\boldsymbol{\mu})^\top \boldsymbol{\Sigma}_\theta^{-1}\mathbf{E}_{rs}\boldsymbol{\Sigma}_\theta^{-1}(\boldsymbol{\theta}-\boldsymbol{\mu})\right].$$
+
+\section{Standard Errors for the M2PL Model}\label{app:m2pl-derivations}
+
+This appendix provides explicit formulas for the standard errors of the population metrics under the multidimensional two-parameter logistic (M2PL) model. The results are organized by metric and can be implemented directly for numerical computation.
+
+\subsection{Model and Notation}
+
+For the M2PL, $P_j(\boldsymbol{\theta}) = \sigma(\mathbf{a}_j^\top\boldsymbol{\theta} + d_j)$ where $\sigma(z) = 1/(1+e^{-z})$. The item parameter vector is $\boldsymbol{\xi}_j = (\mathbf{a}_j^\top, d_j)^\top$ with $D$ discrimination parameters and one intercept. We write $Q_j = 1 - P_j$ and note that $\partial P_j/\partial \eta_j = P_j Q_j$ where $\eta_j = \mathbf{a}_j^\top\boldsymbol{\theta} + d_j$.
+
+The key derivatives are:
+\begin{align*}
+\nabla_{\boldsymbol{\theta}} P_j &= P_j Q_j \mathbf{a}_j, \\
+\nabla_{\boldsymbol{\xi}_j} P_j &= P_j Q_j (\boldsymbol{\theta}^\top, 1)^\top, \\
+\nabla_{\boldsymbol{\xi}_j}\nabla_{\boldsymbol{\theta}} P_j &= P_j Q_j \left[(1 - 2P_j) \mathbf{a}_j \boldsymbol{\theta}^\top + \mathbf{I}_D \;\Big|\; (1 - 2P_j) \mathbf{a}_j\right].
+\end{align*}
+
+Define the auxiliary integrals:
+\begin{equation}\label{eq:aux-integrals}
+\begin{aligned}
+\gamma_j &= \int P_j Q_j f(\boldsymbol{\theta})\, d\boldsymbol{\theta}, \quad
+\boldsymbol{\mu}_j = \int P_j Q_j \boldsymbol{\theta} f(\boldsymbol{\theta})\, d\boldsymbol{\theta}, \quad \\
+\boldsymbol{\lambda}_j &= \int P_j Q_j (1 - 2P_j) \boldsymbol{\theta} f(\boldsymbol{\theta})\, d\boldsymbol{\theta}, \quad
+\kappa_j = \int P_j Q_j (1 - 2P_j) f(\boldsymbol{\theta})\, d\boldsymbol{\theta}.
+\end{aligned}
+\end{equation}
+
+\subsection{Population Difficulty $B_j$}
+
+The gradient with respect to item parameters is:
+$$\nabla_{\boldsymbol{\xi}_j} B_j = -\begin{pmatrix} \boldsymbol{\mu}_j \\ \gamma_j \end{pmatrix}.$$
+
+When $\boldsymbol{\Sigma}_\theta$ is estimated with free elements $\sigma_{rs}$, define:
+$$\tau_{j,rs} = \int (1 - P_j) f(\boldsymbol{\theta}) \frac{\partial \log f(\boldsymbol{\theta})}{\partial \sigma_{rs}}\, d\boldsymbol{\theta}.$$
+Then $\partial B_j/\partial \sigma_{rs} = \tau_{j,rs}$, and the full gradient is $\nabla_{\boldsymbol{\psi}_j} B_j = (\nabla_{\boldsymbol{\xi}_j} B_j^\top, \nabla_{\boldsymbol{\phi}} B_j^\top)^\top$.
+
+\subsection{Vector Population Discrimination $\mathbf{A}_j$}
+
+For the M2PL, $\mathbf{A}_j = \gamma_j \mathbf{a}_j$ and the Jacobian is:
+$$\mathbf{J}_{\mathbf{A}_j} = \left[\mathbf{a}_j \boldsymbol{\lambda}_j^\top + \gamma_j \mathbf{I}_D \;\Big|\; \kappa_j \mathbf{a}_j\right].$$
+
+When $\boldsymbol{\Sigma}_\theta$ is estimated, define:
+$$\nu_{j,rs} = \int P_j Q_j f(\boldsymbol{\theta}) \frac{\partial \log f(\boldsymbol{\theta})}{\partial \sigma_{rs}}\, d\boldsymbol{\theta}.$$
+Then $\partial \mathbf{A}_j/\partial \sigma_{rs} = \nu_{j,rs} \mathbf{a}_j$.
+
+\subsection{Scalar Population Discrimination $A_j$}
+
+For the M2PL, $A_j = \gamma_j \|\mathbf{a}_j\|_{\boldsymbol{\Sigma}_\theta}$ where $\|\mathbf{a}_j\|_{\boldsymbol{\Sigma}_\theta} = \sqrt{\mathbf{a}_j^\top \boldsymbol{\Sigma}_\theta \mathbf{a}_j}$.
+
+The gradient with respect to item parameters is:
+\begin{equation}\label{eq:m2pl-grad-A-final}
+\nabla_{\boldsymbol{\xi}_j} A_j = \frac{1}{\|\mathbf{a}_j\|_{\boldsymbol{\Sigma}_\theta}} \begin{pmatrix} \|\mathbf{a}_j\|_{\boldsymbol{\Sigma}_\theta}^2 \boldsymbol{\lambda}_j + \gamma_j \boldsymbol{\Sigma}_\theta \mathbf{a}_j \\ \|\mathbf{a}_j\|_{\boldsymbol{\Sigma}_\theta}^2 \kappa_j \end{pmatrix}.
+\end{equation}
+
+When $\boldsymbol{\Sigma}_\theta$ is estimated, the derivative with respect to $\sigma_{rs}$ has two contributions---one from the density and one from the covariance-weighted norm:
+\begin{equation}\label{eq:m2pl-grad-A-cov}
+\frac{\partial A_j}{\partial \sigma_{rs}} = \|\mathbf{a}_j\|_{\boldsymbol{\Sigma}_\theta} \nu_{j,rs} + \frac{(2-\delta_{rs})\gamma_j a_{jr} a_{js}}{2\|\mathbf{a}_j\|_{\boldsymbol{\Sigma}_\theta}}.
+\end{equation}
+
+\subsection{Standard Normal Special Case}
+
+When $f(\boldsymbol{\theta}) = \mathcal{N}(\mathbf{0}, \mathbf{I}_D)$, the formulas simplify with $\|\mathbf{a}_j\|_{\boldsymbol{\Sigma}_\theta} = \|\mathbf{a}_j\|_2$ and $\boldsymbol{\Sigma}_\theta \mathbf{a}_j = \mathbf{a}_j$. For items centered at the population mean ($d_j = 0$), the function $P_j Q_j (1-2P_j)$ is odd in $\boldsymbol{\theta}$, so $\boldsymbol{\lambda}_j = \mathbf{0}$ and $\kappa_j = 0$.
+
+\subsection{Variance Formulas}
+
+The standard errors follow from the Delta method:
+\begin{align*}
+\text{Var}(\hat{B}_j) &= (\nabla_{\boldsymbol{\psi}_j} B_j)^\top \mathbf{V}_{\boldsymbol{\psi}_j} (\nabla_{\boldsymbol{\psi}_j} B_j), \\
+\boldsymbol{\Sigma}_{\hat{\mathbf{A}}_j} &= \mathbf{J}_{\mathbf{A}_j}^{(\boldsymbol{\psi})} \mathbf{V}_{\boldsymbol{\psi}_j} (\mathbf{J}_{\mathbf{A}_j}^{(\boldsymbol{\psi})})^\top, \\
+\text{Var}(\hat{A}_j) &= (\nabla_{\boldsymbol{\psi}_j} A_j)^\top \mathbf{V}_{\boldsymbol{\psi}_j} (\nabla_{\boldsymbol{\psi}_j} A_j),
+\end{align*}
+where $\mathbf{V}_{\boldsymbol{\psi}_j}$ is the joint covariance matrix of $\boldsymbol{\psi}_j = (\boldsymbol{\xi}_j^\top, \boldsymbol{\phi}^\top)^\top$. When $\boldsymbol{\Sigma}_\theta$ is fixed, use $\mathbf{\Sigma}_{\hat{\boldsymbol{\xi}}}$ instead and omit the $\boldsymbol{\phi}$ blocks.
+
+\section{Simulation Results}
+\input{sim-results-table.tex}
+
+\end{document}

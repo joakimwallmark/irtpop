@@ -1,0 +1,16 @@
+# R build artifacts
+*.Rcheck/
+*.tar.gz
+*.Rproj.user/
+
+# devtools / roxygen
+/doc/
+/Meta/
+
+# R session
+.Rhistory
+.RData
+.Ruserdata
+
+# macOS
+.DS_Store

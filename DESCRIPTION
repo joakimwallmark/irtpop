@@ -1,0 +1,25 @@
+Package: irtpop
+Title: Population-Based Item Metrics for Fitted mirt Models
+Version: 0.1.0
+Authors@R:
+    person("Joakim", "Wallmark", role = c("aut", "cre"),
+           email = "joakim.wallmark@umu.se")
+Description: Computes population difficulty and population discrimination for
+    items fitted with the 'mirt' package. These metrics integrate expected item
+    scores and their gradients over a specified latent trait distribution,
+    providing summary statistics that reflect item behaviour across a population
+    rather than at a single trait level. Standard errors via the Delta method are
+    available for the multidimensional two-parameter logistic (M2PL) model.
+    Methods are described in Wallmark (in preparation).
+License: MIT + file LICENSE
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+Imports:
+    methods,
+    mirt (>= 1.40),
+    mvtnorm (>= 1.2),
+    stats4
+Suggests:
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
+Config/roxygen2/version: 8.0.0
